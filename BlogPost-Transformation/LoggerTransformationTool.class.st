@@ -16,6 +16,26 @@ LoggerTransformationTool class >> onModel: aMooseModel [
 ]
 
 { #category : #'as yet unclassified' }
+LoggerTransformationTool >> createNewReceiverNode [
+
+	^ FASTJavaIdentifier new
+		  name: 'ArgoParser';
+		  yourself
+]
+
+{ #category : #'as yet unclassified' }
+LoggerTransformationTool >> createWrappersForCandidateMethods: aCollectionOfFamixJavaMethods [
+
+	^ aCollectionOfFamixJavaMethods collect: [ :fjm | 
+		  | fastMethod |
+		  fjm generateFastIfNotDoneAndBind.
+		  fastMethod := fjm fast.
+		  JavaMethodToTransformWrapper
+			  forFamixMethod: fjm
+			  andFAST: fastMethod ]
+]
+
+{ #category : #'as yet unclassified' }
 LoggerTransformationTool >> fetchAllFastNodesUsingCarrefour [
 
 	^ self fetchLogErrorMethodInvocations collect: [ :mi | 
@@ -48,9 +68,25 @@ LoggerTransformationTool >> fetchLogErrorMethodInvocations [
 ]
 
 { #category : #'as yet unclassified' }
+LoggerTransformationTool >> fetchLogErrorMethodInvocationsSenders [
+
+	^ self fetchLogErrorMethodInvocations collect: [ :mi | mi sender ]
+]
+
+{ #category : #'as yet unclassified' }
 LoggerTransformationTool >> fetchLogErrorMethods [
 
 	^ model allModelMethods select: [ :m | m name = 'logError' ]
+]
+
+{ #category : #'as yet unclassified' }
+LoggerTransformationTool >> findAndTransformAllLogErrorInvocations [
+
+	| wrappers |
+	wrappers := self createWrappersForCandidateMethods:
+		            self fetchLogErrorMethodInvocationsSenders.
+		
+	wrappers do: [ :w | self transformMethod: w ].
 ]
 
 { #category : #accessing }
@@ -76,4 +112,14 @@ LoggerTransformationTool >> motionQueryForFastMethod: aFASTJavaMethodEntity [
 		         for: aFASTJavaMethodEntity.
 
 	^ query first at: 'logErrorInvocation'
+]
+
+{ #category : #'as yet unclassified' }
+LoggerTransformationTool >> transformMethod: aJavaMethodWrapper [
+
+	| methodInvocationNode |
+	methodInvocationNode := self motionQueryForFastMethod:
+		                        aJavaMethodWrapper transformedFastMethod.
+	
+	methodInvocationNode receiver: self createNewReceiverNode
 ]
