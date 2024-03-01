@@ -1,0 +1,79 @@
+Class {
+	#name : #LoggerTransformationTool,
+	#superclass : #Object,
+	#instVars : [
+		'model'
+	],
+	#category : #'BlogPost-Transformation'
+}
+
+{ #category : #'as yet unclassified' }
+LoggerTransformationTool class >> onModel: aMooseModel [
+
+	^ self new
+		  model: aMooseModel;
+		  yourself
+]
+
+{ #category : #'as yet unclassified' }
+LoggerTransformationTool >> fetchAllFastNodesUsingCarrefour [
+
+	^ self fetchLogErrorMethodInvocations collect: [ :mi | 
+		  self motionQueryForFastMethod: mi sender fast ]
+]
+
+{ #category : #'as yet unclassified' }
+LoggerTransformationTool >> fetchAllFastNodesUsingMotion [
+
+	^ self fetchLogErrorMethodInvocations collect: [ :mi | 
+		  mi sender generateFastIfNotDoneAndBind.
+		  self motionQueryForFastMethod: mi sender fast ]
+]
+
+{ #category : #'as yet unclassified' }
+LoggerTransformationTool >> fetchFastNodeForFamixInvocation: anInvocation [
+
+	"building and binding the FAST of the invocating method"
+	anInvocation sender generateFastIfNotDoneAndBind.
+	
+	"returning the actual node of the method invocation, our target"
+	^ anInvocation fast 
+]
+
+{ #category : #'as yet unclassified' }
+LoggerTransformationTool >> fetchLogErrorMethodInvocations [
+
+	^ self fetchLogErrorMethods flatCollect: [ :m | 
+		  m incomingInvocations ]
+]
+
+{ #category : #'as yet unclassified' }
+LoggerTransformationTool >> fetchLogErrorMethods [
+
+	^ model allModelMethods select: [ :m | m name = 'logError' ]
+]
+
+{ #category : #accessing }
+LoggerTransformationTool >> model [
+
+	^ model
+]
+
+{ #category : #accessing }
+LoggerTransformationTool >> model: anObject [
+
+	model := anObject
+]
+
+{ #category : #'as yet unclassified' }
+LoggerTransformationTool >> motionQueryForFastMethod: aFASTJavaMethodEntity [
+
+	| query |
+	query := FASTJavaMethodEntity
+	         % { (#'children*' <=> FASTJavaMethodInvocation
+		          % { (#name <=> 'logError') } as: #logErrorInvocation) }
+		         collectBindings: { 'logErrorInvocation' }
+		         for: aFASTJavaMethodEntity.
+
+	^ query first at: 'logErrorInvocation'
+]
