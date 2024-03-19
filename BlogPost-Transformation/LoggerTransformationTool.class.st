@@ -39,7 +39,7 @@ LoggerTransformationTool >> createWrappersForCandidateMethods: aCollectionOfFami
 LoggerTransformationTool >> fetchAllFastNodesUsingCarrefour [
 
 	^ self fetchLogErrorMethodInvocations collect: [ :mi | 
-		  self motionQueryForFastMethod: mi sender fast ]
+		  self fetchFastNodeForFamixInvocation: mi ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -85,8 +85,8 @@ LoggerTransformationTool >> findAndTransformAllLogErrorInvocations [
 	| wrappers |
 	wrappers := self createWrappersForCandidateMethods:
 		            self fetchLogErrorMethodInvocationsSenders.
-		
-	wrappers do: [ :w | self transformMethod: w ].
+
+	^ wrappers do: [ :w | self transformMethod: w ]
 ]
 
 { #category : #accessing }
