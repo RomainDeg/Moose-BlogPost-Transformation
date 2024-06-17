@@ -19,7 +19,7 @@ LoggerTransformationTool class >> onModel: aMooseModel [
 LoggerTransformationTool >> createNewReceiverNode [
 
 	^ FASTJavaIdentifier new
-		  name: 'ArgoParser';
+		  name: 'ArgoLogger';
 		  yourself
 ]
 
